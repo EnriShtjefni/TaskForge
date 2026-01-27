@@ -1,6 +1,6 @@
 <?php
 
-namespace app\Enums;
+namespace App\Enums;
 
 enum TaskStatus: string
 {
@@ -12,10 +12,10 @@ enum TaskStatus: string
     public static function transitions(): array
     {
         return [
-            self::TODO => [self::IN_PROGRESS->value],
-            self::IN_PROGRESS => [self::REVIEW->value],
-            self::REVIEW => [self::DONE->value, self::IN_PROGRESS->value],
-            self::DONE => [],
+            self::TODO->value        => [self::IN_PROGRESS->value],
+            self::IN_PROGRESS->value => [self::REVIEW->value],
+            self::REVIEW->value      => [self::DONE->value, self::IN_PROGRESS->value],
+            self::DONE->value        => [],
         ];
     }
 }

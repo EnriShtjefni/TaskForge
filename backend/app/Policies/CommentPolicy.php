@@ -31,7 +31,6 @@ class CommentPolicy
     public function create(User $user, Task $task): bool
     {
         return $task->project
-            ->organization
             ->users()
             ->where('user_id', $user->id)
             ->exists();
@@ -50,7 +49,7 @@ class CommentPolicy
      */
     public function delete(User $user, Comment $comment): bool
     {
-        return false;
+        return $comment->user_id === $user->id;
     }
 
     /**

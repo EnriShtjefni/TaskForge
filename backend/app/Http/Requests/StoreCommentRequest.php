@@ -12,13 +12,7 @@ class StoreCommentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $task = Task::findOrFail($this->task_id);
-
-        return $task->project
-            ->organization
-            ->users()
-            ->where('user_id', auth()->id())
-            ->exists();
+        return true;
     }
 
     /**

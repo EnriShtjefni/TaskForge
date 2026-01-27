@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use app\Enums\TaskStatus;
+use App\Enums\TaskStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,7 +13,7 @@ class UpdateTaskStatusRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->route('task')->assigned_to === auth()->id();
+        return true;
     }
 
     /**
@@ -24,7 +24,10 @@ class UpdateTaskStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::in(TaskStatus::cases())],
+            'status' => [
+                'required',
+                Rule::in(array_column(TaskStatus::cases(), 'value')),
+            ],
         ];
     }
 }

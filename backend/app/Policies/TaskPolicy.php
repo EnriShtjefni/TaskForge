@@ -22,15 +22,19 @@ class TaskPolicy
      */
     public function view(User $user, Task $task): bool
     {
-        return false;
+        return $task->project
+            ->users()
+            ->where('users.id', $user->id)
+            ->exists();
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, Project $project): bool
+    public function create(User $user, int $projectId): bool
     {
-        return $project->organization()
+        return \App\Models\Project::findOrFail($projectId)
+            ->organization
             ->users()
             ->where('users.id', $user->id)
             ->whereIn('role', ['owner', 'manager'])
@@ -42,7 +46,12 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        return false;
+        return $task->project
+            ->organization
+            ->users()
+            ->where('users.id', $user->id)
+            ->whereIn('role', ['owner', 'manager'])
+            ->exists();
     }
 
     /**
@@ -58,7 +67,12 @@ class TaskPolicy
      */
     public function delete(User $user, Task $task): bool
     {
-        return false;
+        return $task->project
+            ->organization
+            ->users()
+            ->where('users.id', $user->id)
+            ->whereIn('role', ['owner', 'manager'])
+            ->exists();
     }
 
     /**

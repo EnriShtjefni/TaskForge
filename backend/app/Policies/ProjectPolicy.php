@@ -13,7 +13,7 @@ class ProjectPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,15 +21,21 @@ class ProjectPolicy
      */
     public function view(User $user, Project $project): bool
     {
-        return false;
+        return $project->organization
+            ->users()
+            ->where('users.id', $user->id)
+            ->exists();
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user, $organizationId): bool
     {
-        return false;
+        return $user->organizations()
+            ->where('organizations.id', $organizationId)
+            ->wherePivot('role', 'owner')
+            ->exists();
     }
 
     /**
@@ -37,7 +43,11 @@ class ProjectPolicy
      */
     public function update(User $user, Project $project): bool
     {
-        return false;
+        return $project->organization
+            ->users()
+            ->where('users.id', $user->id)
+            ->wherePivot('role', 'owner')
+            ->exists();
     }
 
     /**
@@ -45,7 +55,7 @@ class ProjectPolicy
      */
     public function delete(User $user, Project $project): bool
     {
-        return $project->organization()
+        return $project->organization
             ->users()
             ->where('users.id', $user->id)
             ->wherePivot('role', 'owner')
@@ -67,4 +77,49 @@ class ProjectPolicy
     {
         return false;
     }
+
+    /**
+     * Determine whether the user can manage project members.
+     */
+    public function manage(User $user, Project $project): bool
+    {
+        return $project->organization
+            ->users()
+            ->where('users.id', $user->id)
+            ->wherePivotIn('role', ['owner'])
+            ->exists();
+    }
+
+    /**
+     * Determine whether the user can add a member to the project.
+     */
+    public function addMemberToProject(User $user, Project $project, User $member): bool
+    {
+        // Only owners can manage project members
+        if (! $project->organization
+            ->users()
+            ->where('users.id', $user->id)
+            ->wherePivot('role', 'owner')
+            ->exists()) {
+            return false;
+        }
+
+        // The added user must belong to the organization
+        return $project->organization
+            ->users()
+            ->where('users.id', $member->id)
+            ->exists();
+    }
+
+
+    /**
+     * Determine whether the user can comment on the project.
+     */
+    public function comment(User $user, Project $project): bool
+    {
+        return $project->users()
+            ->where('users.id', $user->id)
+            ->exists();
+    }
+
 }

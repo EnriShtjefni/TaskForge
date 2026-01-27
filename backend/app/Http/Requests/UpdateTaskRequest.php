@@ -2,22 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Organization;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreProjectRequest extends FormRequest
+class UpdateTaskRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        $organization = Organization::findOrFail($this->organization_id);
-
-        return $organization->users()
-            ->where('user_id', auth()->id())
-            ->where('role', 'owner')
-            ->exists();
+        return true;
     }
 
     /**
@@ -28,8 +22,9 @@ class StoreProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'organization_id' => ['required', 'exists:organizations,id'],
-            'name'            => ['required', 'string', 'max:255'],
+            'name'        => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'assigned_to' => ['nullable', 'exists:users,id'],
         ];
     }
 }
