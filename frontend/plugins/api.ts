@@ -4,12 +4,11 @@ export default defineNuxtPlugin(() => {
     const config = useRuntimeConfig()
 
     const api = axios.create({
-
+        baseURL: config.public.apiBase,
         withCredentials: true,
+        withXSRFToken: true,
         xsrfCookieName: 'XSRF-TOKEN',
         xsrfHeaderName: 'X-XSRF-TOKEN',
-
-        baseURL: config.public.apiBase,
         headers: {
             Accept: 'application/json',
         },

@@ -50,7 +50,7 @@ export const useAuthStore = defineStore('auth', {
         async fetchUser() {
             const { $api } = useNuxtApp()
             try {
-                const { data } = await $api.get('/auth/me')
+                const { data } = await $api.get('/api/auth/me')
                 this.user = data
             } catch {
                 this.user = null
@@ -59,7 +59,7 @@ export const useAuthStore = defineStore('auth', {
 
         async logout() {
             const { $api } = useNuxtApp()
-            await $api.post('/auth/logout')
+            await $api.post('/api/auth/logout')
             this.user = null
         },
     },
