@@ -8,6 +8,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -45,7 +46,6 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        auth()->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -57,5 +57,11 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return new UserResource($request->user());
+    }
+
+    public function users()
+    {
+        $users = User::all();
+        return UserResource::collection($users);
     }
 }

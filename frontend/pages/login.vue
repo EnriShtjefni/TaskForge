@@ -2,9 +2,11 @@
 import { useAuthStore } from '@/stores/auth'
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useBackendToast} from "~/composables/useBackendToast";
 
 const auth = useAuthStore()
 const router = useRouter()
+const { showError } = useBackendToast()
 
 const form = reactive({
   email: '',
@@ -16,7 +18,7 @@ const submit = async () => {
     await auth.login(form)
     await router.push('/dashboard')
   } catch (e) {
-    alert('Invalid credentials')
+    showError(e)
   }
 }
 </script>

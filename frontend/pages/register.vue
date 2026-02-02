@@ -2,9 +2,11 @@
 import { useAuthStore } from '@/stores/auth'
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useBackendToast } from "~/composables/useBackendToast";
 
 const auth = useAuthStore()
 const router = useRouter()
+const { showError } = useBackendToast()
 
 const form = reactive({
   name: '',
@@ -14,8 +16,12 @@ const form = reactive({
 })
 
 const submit = async () => {
-  await auth.register(form)
-  await router.push('/')
+  try {
+    await auth.register(form)
+    await router.push('/dashboard')
+  } catch (e) {
+    showError(e)
+  }
 }
 </script>
 

@@ -30,7 +30,7 @@ class OrganizationController extends Controller
         $organizations = $this->organizationService
             ->usersOrganizations($request->user());
 
-        return OrganizationResource::collection($organizations);
+        return OrganizationResource::collection($organizations->load('users'));
     }
 
     /**
@@ -45,7 +45,18 @@ class OrganizationController extends Controller
             $request->validated()
         );
 
-        return new OrganizationResource($organization);
+        if ($request->filled('members')) {
+            foreach ($request->members as $member) {
+                $organization->users()->attach(
+                    $member['user_id'],
+                    ['role' => $member['role']]
+                );
+            }
+        }
+
+        return new OrganizationResource(
+            $organization->load('users')
+        );
     }
 
     /**
@@ -56,7 +67,7 @@ class OrganizationController extends Controller
     {
         $this->authorize('view', $organization);
 
-        return new OrganizationResource($organization);
+        return new OrganizationResource($organization->load('users'));
     }
 
     /**
@@ -72,7 +83,22 @@ class OrganizationController extends Controller
             $request->validated()
         );
 
-        return new OrganizationResource($organization);
+        if ($request->has('members')) {
+            $organization->users()
+                ->wherePivot('role', '!=', 'owner')
+                ->detach();
+
+            foreach ($request->members as $member) {
+                $organization->users()->attach(
+                    $member['user_id'],
+                    ['role' => $member['role']]
+                );
+            }
+        }
+
+        return new OrganizationResource(
+            $organization->load('users')
+        );
     }
 
     /**

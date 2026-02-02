@@ -71,15 +71,4 @@ class OrganizationPolicy
     {
         return false;
     }
-
-    /**
-     * Determine whether the user can manage members of the organization.
-     */
-    public function manageMembers(User $user, Organization $organization): bool
-    {
-        return $organization->users()
-            ->where('users.id', $user->id)
-            ->wherePivot('role', 'owner')
-            ->exists();
-    }
 }

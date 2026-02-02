@@ -15,7 +15,9 @@ class OrganizationService
     public function usersOrganizations(User $user): Collection
     {
         return $user->organizations()
-            ->withPivot('role')
+            ->with([
+                'users:id,name,email',
+            ])
             ->latest()
             ->get();
     }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
 import { useDarkMode } from "~/composables/useDarkMode";
-import { onClickOutside} from "@vueuse/core";
+import { onClickOutside } from "@vueuse/core";
 import sunIcon from '~/assets/icons/sun.svg'
 import moonIcon from '~/assets/icons/moon.svg'
 import arrowDownIcon from '~/assets/icons/arrowDown.svg'
@@ -60,7 +60,10 @@ onClickOutside(dropdownRef, () => {
             class="absolute right-0 mt-4 w-32 bg-white dark:bg-gray-700 rounded shadow-md border dark:border-gray-600"
         >
           <button
-              @click="authUser.logout"
+              @click="() => {
+                openLogoutDropdown = false
+                authUser.logout()
+              }"
               class="w-full text-left px-4 py-2 text-sm text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600"
           >
             Logout

@@ -24,6 +24,14 @@ class OrganizationResource extends JsonResource
             'projects' => ProjectResource::collection(
                 $this->whenLoaded('projects')
             ),
+            'members' => $this->users
+                ->filter(fn ($user) => $user->pivot->role !== 'owner')
+                ->map(fn ($user) => [
+                    'user_id' => $user->id,
+                    'name'    => $user->name,
+                    'role'    => $user->pivot->role,
+                ])
+                ->values(),
         ];
     }
 }

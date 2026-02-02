@@ -23,6 +23,9 @@ class StoreOrganizationRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'members' => ['array'],
+            'members.*.user_id' => ['required', 'exists:users,id'],
+            'members.*.role' => ['required', 'in:manager,member'],
         ];
     }
 }
