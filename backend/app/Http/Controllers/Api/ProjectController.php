@@ -29,7 +29,9 @@ class ProjectController extends Controller
 
         $projects = $this->projectService->organizationsProjects($organization);
 
-        return ProjectResource::collection($projects);
+        return ProjectResource::collection(
+            $organization->projects()->with('users', 'organization')->latest()->get()
+        );
     }
 
     /**
@@ -41,7 +43,11 @@ class ProjectController extends Controller
 
         $project = $this->projectService->create($request->validated());
 
-        return new ProjectResource($project);
+        if ($request->filled('members')) {
+            $project->users()->sync($request->members);
+        }
+
+        return new ProjectResource($project->load('users', 'organization'));
     }
 
     /**
@@ -63,7 +69,9 @@ class ProjectController extends Controller
 
         $project = $this->projectService->update($project, $request->validated());
 
-        return new ProjectResource($project);
+        $project->users()->sync($request->members ?? []);
+
+        return new ProjectResource($project->load('users', 'organization'));
     }
 
     /**

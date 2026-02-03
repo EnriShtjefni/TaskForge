@@ -21,6 +21,14 @@ class ProjectResource extends JsonResource
             'tasks' => TaskResource::collection(
                 $this->whenLoaded('tasks')
             ),
+            'organization' => [
+                'id' => $this->organization->id,
+                'name' => $this->organization->name,
+            ],
+            'members' => $this->users->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+            ]),
             'created_at' => $this->created_at,
         ];
     }

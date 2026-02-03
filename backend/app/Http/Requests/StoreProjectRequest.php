@@ -12,11 +12,18 @@ class StoreProjectRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $organization = Organization::findOrFail($this->organization_id);
+//        $organization = Organization::findOrFail($this->organization_id);
+//
+//        return $organization->users()
+//            ->where('user_id', auth()->id())
+//            ->where('role', 'owner')
+//            ->exists();
 
-        return $organization->users()
-            ->where('user_id', auth()->id())
-            ->where('role', 'owner')
+        return Organization::where('id', $this->organization_id)
+            ->whereHas('users', fn ($q) =>
+            $q->where('user_id', auth()->id())
+                ->where('role', 'owner')
+            )
             ->exists();
     }
 
@@ -28,8 +35,10 @@ class StoreProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['required', 'string', 'max:255'],
             'organization_id' => ['required', 'exists:organizations,id'],
-            'name'            => ['required', 'string', 'max:255'],
+            'members' => ['array'],
+            'members.*' => ['exists:users,id'],
         ];
     }
 }
