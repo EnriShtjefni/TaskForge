@@ -7,6 +7,7 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Http\Resources\TaskResource;
+use App\Models\Project;
 use App\Models\Task;
 use App\Services\TaskService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -25,9 +26,11 @@ class TaskController extends Controller
     /**
      * List tasks for a project (Kanban)
      */
-    public function index($projectId)
+    public function index(Project $project)
     {
-        $tasks = Task::where('project_id', $projectId)
+        $this->authorize('view', $project);
+
+        $tasks = Task::where('project_id', $project->id)
             ->with(['assignee'])
             ->get();
 

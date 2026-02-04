@@ -1,31 +1,80 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
-import { useDarkMode } from "~/composables/useDarkMode";
-import { onClickOutside } from "@vueuse/core";
+import { useDarkMode } from '~/composables/useDarkMode'
+import { onClickOutside } from '@vueuse/core'
 import sunIcon from '~/assets/icons/sun.svg'
 import moonIcon from '~/assets/icons/moon.svg'
 import arrowDownIcon from '~/assets/icons/arrowDown.svg'
 
 const authUser = useAuthStore()
 const { isDark, toggle, init } = useDarkMode()
+const route = useRoute()
 
 onMounted(init)
 
 const openLogoutDropdown = ref(false)
-const dropdownRef = ref(null)
+const dropdownRef = ref<HTMLElement | null>(null)
 
 onClickOutside(dropdownRef, () => {
   openLogoutDropdown.value = false
 })
+
+const isActive = (to: string) => {
+  if (to === '/dashboard') return route.path === '/dashboard'
+  if (to === '/organizations') return route.path === '/organizations'
+  return route.path.startsWith(to)
+}
 </script>
 
 <template>
-  <nav class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center">
-    <h1 class="font-bold text-xl text-gray-800 dark:text-white">
-      TaskForge
-    </h1>
+  <nav
+      class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center gap-4"
+  >
+    <div class="flex items-center min-w-0">
+      <NuxtLink
+          to="/dashboard"
+          class="font-bold text-xl text-gray-800 dark:text-white hover:opacity-90 shrink-0"
+      >
+        TaskForge
+      </NuxtLink>
+    </div>
 
-    <div class="flex items-center gap-4">
+    <div
+        v-if="authUser.isAuthenticated"
+        class="hidden sm:flex items-center justify-center gap-1 flex-1"
+    >
+      <NuxtLink
+          to="/dashboard"
+          class="px-3 py-2 rounded text-sm font-medium transition-colors"
+          :class="isActive('/dashboard')
+                  ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+      >
+        Dashboard
+      </NuxtLink>
+
+      <NuxtLink
+          to="/organizations"
+          class="px-3 py-2 rounded text-sm font-medium transition-colors"
+          :class="isActive('/organizations')
+                   ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+      >
+        Organizations
+      </NuxtLink>
+
+      <NuxtLink
+          to="/tasks"
+          class="px-3 py-2 rounded text-sm font-medium transition-colors"
+          :class="isActive('/tasks')
+                   ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+      >
+        Tasks
+      </NuxtLink>
+    </div>
+
+    <div class="flex items-center gap-4 shrink-0">
       <button
           @click="toggle"
           class="w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-500 rounded-full"
@@ -47,7 +96,7 @@ onClickOutside(dropdownRef, () => {
             @click="openLogoutDropdown = !openLogoutDropdown"
             class="flex items-center gap-2 text-gray-700 dark:text-gray-200 font-medium"
         >
-          {{ authUser.user.name }}
+          {{ authUser.user?.name }}
           <img
               :src="arrowDownIcon"
               class="w-3 h-3 dark:invert"

@@ -30,7 +30,12 @@ class OrganizationController extends Controller
         $organizations = $this->organizationService
             ->usersOrganizations($request->user());
 
-        return OrganizationResource::collection($organizations->load('users'));
+        $organizations->load([
+            'users',
+            'projects' => fn ($q) => $q->with('users'),
+        ]);
+
+        return OrganizationResource::collection($organizations);
     }
 
     /**
@@ -84,6 +89,20 @@ class OrganizationController extends Controller
         );
 
         if ($request->has('members')) {
+
+            $organization->load(['users', 'projects.users']);
+
+            $existingUserIds = $organization->users
+                ->where('pivot.role', '!=', 'owner')
+                ->pluck('id')
+                ->all();
+
+            $incomingUserIds = collect($request->members)
+                ->pluck('user_id')
+                ->all();
+
+            $removedUserIds = array_diff($existingUserIds, $incomingUserIds);
+
             $organization->users()
                 ->wherePivot('role', '!=', 'owner')
                 ->detach();
@@ -93,6 +112,12 @@ class OrganizationController extends Controller
                     $member['user_id'],
                     ['role' => $member['role']]
                 );
+            }
+
+            if (!empty($removedUserIds)) {
+                foreach ($organization->projects as $project) {
+                    $project->users()->detach($removedUserIds);
+                }
             }
         }
 

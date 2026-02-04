@@ -1,6 +1,15 @@
 <script setup lang="ts">
-defineProps<{ project: any }>()
-defineEmits(['edit', 'delete'])
+import type { Project } from '@/stores/projects'
+
+defineProps<{
+  project: Project
+  canManage: boolean
+}>()
+
+defineEmits<{
+  edit: [project: Project]
+  delete: [id: number]
+}>()
 </script>
 
 <template>
@@ -8,21 +17,24 @@ defineEmits(['edit', 'delete'])
     <h2 class="font-semibold text-lg dark:text-white">
       {{ project.name }}
     </h2>
-
-    <p class="text-sm text-gray-500">
-      {{ project.organization.name }}
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+      Members:
+      <span v-if="project.members && project.members.length > 0">
+        {{ project.members.map(m => m.name).join(', ') }}
+      </span>
     </p>
-
-    <div class="flex gap-2 mt-4">
+    <div v-if="canManage" class="flex gap-2 mt-4">
       <button
+          type="button"
+          class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
           @click="$emit('edit', project)"
-          class="bg-blue-600 text-white px-3 py-1 rounded"
       >
         Edit
       </button>
       <button
+          type="button"
+          class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
           @click="$emit('delete', project.id)"
-          class="bg-red-600 text-white px-3 py-1 rounded"
       >
         Delete
       </button>

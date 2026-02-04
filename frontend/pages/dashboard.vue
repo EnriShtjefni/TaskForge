@@ -1,126 +1,104 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
-import { type Organization, useOrganizationStore } from "~/stores/organizations";
-import { type Project, useProjectStore } from '~/stores/projects'
-import { onMounted, ref } from 'vue'
+import { useOrganizationStore } from '@/stores/organizations'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import OrganizationModal from '@/components/organizations/OrganizationModal.vue'
-import OrganizationCard from "~/components/organizations/OrganizationCard.vue";
-import ProjectCard from "~/components/projects/ProjectCard.vue";
-import ProjectModal from "~/components/projects/ProjectModal.vue";
 
 const auth = useAuthStore()
 const router = useRouter()
-
 const orgStore = useOrganizationStore()
-const projectStore = useProjectStore()
 
-const showModal = ref(false)
-const editingOrg = ref<Organization | null>(null)
-
-const showProjectModal = ref(false)
-const editingProject = ref<Project | null>(null)
-
-onMounted(() => {
+onMounted(async () => {
   if (!auth.isAuthenticated) {
     router.push('/login')
+    return
   }
-  orgStore.fetch()
-  projectStore.fetch()
+  await orgStore.fetch()
 })
 
-const editOrg = (org: Organization) => {
-  editingOrg.value = org
-  showModal.value = true
-}
+const totalOrganizations = computed(
+    () => orgStore.organizations.length
+)
 
-const editProject = (project: Project) => {
-  editingProject.value = project
-  showProjectModal.value = true
-}
+const totalProjects = computed(() =>
+    orgStore.organizations.reduce(
+        (sum, org) => sum + (org.projects?.length ?? 0),
+        0
+    )
+)
+
+const cards = computed(() => [
+  {
+    label: 'Organizations',
+    value: totalOrganizations.value,
+    href: '/organizations',
+    color: 'bg-blue-600 hover:bg-blue-700',
+    icon: '🏢',
+  },
+  {
+    label: 'Projects',
+    value: totalProjects.value,
+    href: '/organizations',
+    color: 'bg-green-600 hover:bg-green-700',
+    icon: '📁',
+  },
+])
 </script>
 
 <template>
-  <div class="p-10 space-y-6">
-    <section class="space-y-6">
-      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 class="text-2xl sm:text-3xl font-bold dark:text-white">
-          Your Organizations, {{ auth.user?.name }}
-        </h1>
-
-        <button
-            @click="showModal = true"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
-        >
-          + Create Organization
-        </button>
-      </div>
-
-      <div v-if="orgStore.loading" class="text-gray-500">
-        Loading organizations...
-      </div>
-
-      <div v-else-if="orgStore.organizations.length === 0" class="text-gray-500">
-        You are not part of any organization yet.
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <OrganizationCard
-            v-for="org in orgStore.organizations"
-            :key="org.id"
-            :organization="org"
-            :is-owner="orgStore.isOwner(org)"
-            @edit="editOrg"
-            @delete="orgStore.delete"
-        />
-      </div>
+  <div class="p-10 space-y-8">
+    <section class="space-y-4">
+      <h1 class="text-2xl sm:text-3xl font-bold dark:text-white">
+        Dashboard
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400">
+        Hi {{ auth.user?.name }}. Here’s an overview of your workspace.
+      </p>
     </section>
 
-    <section class="space-y-6">
-      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 class="text-2xl font-bold dark:text-white">
-          Projects
-        </h2>
+    <div v-if="orgStore.loading" class="text-gray-500">
+      Loading...
+    </div>
 
-        <button
-            v-if="projectStore.canCreate"
-            @click="showProjectModal = true"
-            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <NuxtLink
+          v-for="card in cards"
+          :key="card.label"
+          :to="card.href"
+          class="block p-6 rounded-lg shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+      >
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {{ card.label }}
+            </p>
+            <p class="mt-2 text-3xl font-bold dark:text-white">
+              {{ card.value }}
+            </p>
+          </div>
+          <span class="text-3xl" aria-hidden="true">{{ card.icon }}</span>
+        </div>
+        <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+          View details →
+        </p>
+      </NuxtLink>
+    </div>
+
+    <section class="pt-4">
+      <div class="flex flex-wrap gap-4">
+        <NuxtLink
+            to="/organizations"
+            class="inline-flex items-center px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
         >
-          + Create Project
-        </button>
-      </div>
-
-      <div v-if="projectStore.loading" class="text-gray-500">
-        Loading projects...
-      </div>
-
-      <div v-else-if="projectStore.projects.length === 0" class="text-gray-500">
-        No projects yet.
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <ProjectCard
-            v-for="project in projectStore.projects"
-            :key="project.id"
-            :project="project"
-            :is-owner="projectStore.isOwner(project)"
-            @edit="editProject"
-            @delete="projectStore.delete"
-        />
+          Organizations & Projects
+        </NuxtLink>
+        <NuxtLink
+            to="/tasks"
+            class="inline-flex items-center px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+        >
+          Task Board (Kanban)
+        </NuxtLink>
       </div>
     </section>
-
-    <OrganizationModal
-        v-if="showModal"
-        :organization="editingOrg"
-        @close="showModal = false; editingOrg = null"
-    />
-
-    <ProjectModal
-        v-if="showProjectModal"
-        :project="editingProject"
-        @close="showProjectModal = false; editingProject = null"
-    />
   </div>
 </template>
