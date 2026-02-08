@@ -103,6 +103,12 @@ const cards = computed(() => [
         >
           Task Board (Kanban)
         </NuxtLink>
+        <NuxtLink
+            to="/activity-logs"
+            class="inline-flex items-center px-4 py-2 rounded bg-amber-600 text-white hover:bg-amber-700"
+        >
+          Activity Logs
+        </NuxtLink>
       </div>
     </section>
   </div>

@@ -28,6 +28,12 @@ class CommentController extends Controller
             'body'    => $request->body,
         ]);
 
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($comment)
+            ->withProperties(['task_id' => $task->id])
+            ->log('comment_created');
+
         return new CommentResource(
             $comment->load('user')
         );
@@ -39,6 +45,12 @@ class CommentController extends Controller
     public function destroy(Comment $comment)
     {
         $this->authorize('delete', $comment);
+
+        activity()
+            ->causedBy(request()->user())
+            ->performedOn($comment)
+            ->withProperties(['task_id' => $comment->task_id])
+            ->log('comment_deleted');
 
         $comment->delete();
 

@@ -24,6 +24,11 @@ class AuthController extends Controller
 
         auth()->login($user);
 
+        activity()
+            ->causedBy($user)
+            ->withProperties(['email' => $user->email])
+            ->log('user_registered');
+
         return response()->json([
             'user' => new UserResource($user),
         ], 201);
@@ -38,6 +43,11 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties(['email' => auth()->user()->email])
+            ->log('user_logged_in');
 
         return response()->json([
             'user' => new UserResource(auth()->user()),

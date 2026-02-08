@@ -50,6 +50,12 @@ class OrganizationController extends Controller
             $request->validated()
         );
 
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($organization)
+            ->withProperties(['name' => $organization->name])
+            ->log('organization_created');
+
         if ($request->filled('members')) {
             foreach ($request->members as $member) {
                 $organization->users()->attach(
@@ -87,6 +93,12 @@ class OrganizationController extends Controller
             $organization,
             $request->validated()
         );
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($organization)
+            ->withProperties(['name' => $organization->name])
+            ->log('organization_updated');
 
         if ($request->has('members')) {
 
@@ -133,6 +145,12 @@ class OrganizationController extends Controller
     public function destroy(Organization $organization)
     {
         $this->authorize('delete', $organization);
+
+        activity()
+            ->causedBy(request()->user())
+            ->performedOn($organization)
+            ->withProperties(['name' => $organization->name])
+            ->log('organization_deleted');
 
         $this->organizationService->delete($organization);
 

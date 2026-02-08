@@ -47,6 +47,12 @@ class ProjectController extends Controller
             $project->users()->sync($request->members);
         }
 
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($project)
+            ->withProperties(['name' => $project->name])
+            ->log('project_created');
+
         return new ProjectResource($project->load('users', 'organization'));
     }
 
@@ -71,6 +77,12 @@ class ProjectController extends Controller
 
         $project->users()->sync($request->members ?? []);
 
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($project)
+            ->withProperties(['name' => $project->name])
+            ->log('project_updated');
+
         return new ProjectResource($project->load('users', 'organization'));
     }
 
@@ -80,6 +92,12 @@ class ProjectController extends Controller
     public function destroy(Project $project)
     {
         $this->authorize('delete', $project);
+
+        activity()
+            ->causedBy(request()->user())
+            ->performedOn($project)
+            ->withProperties(['name' => $project->name])
+            ->log('project_deleted');
 
         $this->projectService->delete($project);
 

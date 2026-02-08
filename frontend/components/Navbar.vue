@@ -22,6 +22,7 @@ onClickOutside(dropdownRef, () => {
 const isActive = (to: string) => {
   if (to === '/dashboard') return route.path === '/dashboard'
   if (to === '/organizations') return route.path === '/organizations'
+  if (to === '/activity-logs') return route.path === '/activity-logs'
   return route.path.startsWith(to)
 }
 </script>
@@ -71,6 +72,16 @@ const isActive = (to: string) => {
                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
       >
         Tasks
+      </NuxtLink>
+
+      <NuxtLink
+          to="/activity-logs"
+          class="px-3 py-2 rounded text-sm font-medium transition-colors"
+          :class="isActive('/activity-logs')
+                   ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                   : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+      >
+        Activity Logs
       </NuxtLink>
     </div>
 

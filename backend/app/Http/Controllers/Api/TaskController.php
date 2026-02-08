@@ -65,6 +65,12 @@ class TaskController extends Controller
         $task = $this->taskService->create($request->validated());
         $task->load(['assignee']);
 
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($task)
+            ->withProperties(['name' => $task->name, 'project_id' => $task->project_id])
+            ->log('task_created');
+
         TaskCreated::dispatch($task);
 
         return new TaskResource($task);
@@ -79,6 +85,12 @@ class TaskController extends Controller
 
         $task = $this->taskService->update($task, $request->validated());
         $task->load(['assignee']);
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($task)
+            ->withProperties(['name' => $task->name])
+            ->log('task_updated');
 
         TaskUpdated::dispatch($task);
 
@@ -95,6 +107,12 @@ class TaskController extends Controller
         $task = $this->taskService->updateStatus($task, $request->status);
         $task->load(['assignee']);
 
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($task)
+            ->withProperties(['name' => $task->name, 'status' => $task->status])
+            ->log('task_status_updated');
+
         TaskUpdated::dispatch($task);
 
         return new TaskResource($task);
@@ -109,6 +127,13 @@ class TaskController extends Controller
 
         $taskId = $task->id;
         $projectId = $task->project_id;
+
+        activity()
+            ->causedBy(request()->user())
+            ->performedOn($task)
+            ->withProperties(['name' => $task->name, 'task_id' => $taskId])
+            ->log('task_deleted');
+
         $task->delete();
 
         TaskDeleted::dispatch($taskId, $projectId);
