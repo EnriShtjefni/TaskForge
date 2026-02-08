@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Api;
 
+use App\Events\TaskCreated;
+use App\Events\TaskDeleted;
+use App\Events\TaskUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
@@ -11,6 +14,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Services\TaskService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
@@ -24,15 +28,29 @@ class TaskController extends Controller
     }
 
     /**
-     * List tasks for a project (Kanban)
+     * List tasks for a project (Kanban) with filtering and pagination.
      */
-    public function index(Project $project)
+    public function index(Request $request, Project $project)
     {
         $this->authorize('view', $project);
 
-        $tasks = Task::where('project_id', $project->id)
-            ->with(['assignee'])
-            ->get();
+        $query = Task::where('project_id', $project->id)
+            ->with(['assignee', 'comments.user']);
+
+        if ($assignedTo = $request->integer('assigned_to')) {
+            $query->where('assigned_to', $assignedTo);
+        }
+
+        if ($search = $request->string('search')->toString()) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $tasks = $query
+            ->orderByDesc('created_at')
+            ->paginate(20);
 
         return TaskResource::collection($tasks);
     }
@@ -45,6 +63,9 @@ class TaskController extends Controller
         $this->authorize('create', [Task::class, $request->project_id]);
 
         $task = $this->taskService->create($request->validated());
+        $task->load(['assignee']);
+
+        TaskCreated::dispatch($task);
 
         return new TaskResource($task);
     }
@@ -57,6 +78,9 @@ class TaskController extends Controller
         $this->authorize('update', $task);
 
         $task = $this->taskService->update($task, $request->validated());
+        $task->load(['assignee']);
+
+        TaskUpdated::dispatch($task);
 
         return new TaskResource($task);
     }
@@ -69,6 +93,9 @@ class TaskController extends Controller
         $this->authorize('updateStatus', $task);
 
         $task = $this->taskService->updateStatus($task, $request->status);
+        $task->load(['assignee']);
+
+        TaskUpdated::dispatch($task);
 
         return new TaskResource($task);
     }
@@ -80,7 +107,11 @@ class TaskController extends Controller
     {
         $this->authorize('delete', $task);
 
+        $taskId = $task->id;
+        $projectId = $task->project_id;
         $task->delete();
+
+        TaskDeleted::dispatch($taskId, $projectId);
 
         return response()->json(['message' => 'Task deleted']);
     }

@@ -19,11 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('organizations', OrganizationController::class);
 
-    Route::get('organizations/{organization}/projects', [ProjectController::class, 'index']);
-    Route::post('projects', [ProjectController::class, 'store']);
-    Route::get('projects/{project}', [ProjectController::class, 'show']);
-    Route::put('projects/{project}', [ProjectController::class, 'update']);
-    Route::delete('projects/{project}', [ProjectController::class, 'destroy']);
+    Route::apiResource('projects', ProjectController::class);
 
     Route::get('projects/{project}/tasks', [TaskController::class, 'index']);
     Route::post('tasks', [TaskController::class, 'store']);

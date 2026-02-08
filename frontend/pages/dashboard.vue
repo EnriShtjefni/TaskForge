@@ -10,9 +10,14 @@ const orgStore = useOrganizationStore()
 
 onMounted(async () => {
   if (!auth.isAuthenticated) {
-    router.push('/login')
+    await auth.fetchUser()
+  }
+
+  if (!auth.isAuthenticated) {
+    await router.push('/login')
     return
   }
+
   await orgStore.fetch()
 })
 

@@ -16,7 +16,7 @@ class StoreTaskRequest extends FormRequest
 
         return $project->organization
             ->users()
-            ->where('user_id', auth()->id())
+            ->where('users.id', auth()->id())
             ->whereIn('role', ['owner', 'manager'])
             ->exists();
     }

@@ -23,12 +23,17 @@ const showProjectModal = ref(false)
 const editingProject = ref<Project | null>(null)
 const createProjectOrg = ref<Organization | null>(null)
 
-onMounted(() => {
+onMounted(async () => {
   if (!auth.isAuthenticated) {
-    router.push('/login')
+    await auth.fetchUser()
+  }
+
+  if (!auth.isAuthenticated) {
+    await router.push('/login')
     return
   }
-  orgStore.fetch()
+
+  await orgStore.fetch()
 })
 
 const openEditOrg = (org: Organization) => {

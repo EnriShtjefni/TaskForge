@@ -25,11 +25,32 @@ export type Task = {
     assignee: { id: number; name: string } | null
     project_id: number
     created_at: string
+    comments?: {
+        id: number
+        body: string
+        created_at: string
+        user?: { id: number; name: string } | null
+    }[]
+}
+
+export type TaskListParams = {
+    search?: string
+    assigned_to?: number
+    page?: number
+}
+
+export type PaginationMeta = {
+    current_page: number
+    last_page: number
+    total: number
+    from: number | null
+    to: number | null
 }
 
 export const useTasksStore = defineStore('tasks', {
     state: () => ({
         tasks: [] as Task[],
+        meta: null as PaginationMeta | null,
         loading: false,
     }),
 
@@ -41,14 +62,16 @@ export const useTasksStore = defineStore('tasks', {
     },
 
     actions: {
-        async fetchByProject(projectId: number) {
+        async fetchByProject(projectId: number, params: TaskListParams = {}) {
             const { $api } = useNuxtApp()
             this.loading = true
             try {
                 const { data } = await $api.get(
-                    `/api/projects/${projectId}/tasks`
+                    `/api/projects/${projectId}/tasks`,
+                    { params }
                 )
                 this.tasks = data.data ?? []
+                this.meta = data.meta ?? null
             } finally {
                 this.loading = false
             }
@@ -62,17 +85,20 @@ export const useTasksStore = defineStore('tasks', {
                 toast.error({ message: 'Invalid status transition' })
                 return
             }
+            const previousStatus = task.status
+            const index = this.tasks.findIndex((t) => t.id === taskId)
+            if (index !== -1) this.tasks[index] = { ...task, status: newStatus }
             try {
                 const { data } = await $api.put(
                     `/api/tasks/${taskId}/status`,
                     { status: newStatus }
                 )
-                const index = this.tasks.findIndex((t) => t.id === taskId)
                 if (index !== -1) this.tasks[index] = data.data
                 toast.success({ message: 'Status updated' })
             } catch {
+                if (index !== -1)
+                    this.tasks[index] = { ...task, status: previousStatus }
                 toast.error({ message: 'Could not update status' })
-                await this.fetchByProject(task.project_id)
             }
         },
 
@@ -86,9 +112,12 @@ export const useTasksStore = defineStore('tasks', {
             const toast = useToast()
             try {
                 const { data } = await $api.post('/api/tasks', payload)
-                this.tasks.push(data.data)
+                const task = data?.data ?? data
+                if (task && typeof task.id === 'number') {
+                    this.tasks.push(task)
+                }
                 toast.success({ message: 'Task created' })
-                return data.data
+                return task
             } catch {
                 toast.error({ message: 'Could not create task' })
                 throw new Error('Create failed')
@@ -132,8 +161,72 @@ export const useTasksStore = defineStore('tasks', {
             }
         },
 
+        async addComment(taskId: number, body: string) {
+            const { $api } = useNuxtApp()
+            const toast = useToast()
+            const task = this.tasks.find((t) => t.id === taskId)
+            if (!task) return
+            try {
+                const { data } = await $api.post('/api/comments', {
+                    task_id: taskId,
+                    body,
+                })
+                const comment = data?.data ?? data
+                const index = this.tasks.findIndex((t) => t.id === taskId)
+                if (index !== -1) {
+                    const existingComments = this.tasks[index].comments ?? []
+                    this.tasks[index] = {
+                        ...this.tasks[index],
+                        comments: [...existingComments, comment],
+                    }
+                }
+                toast.success({ message: 'Comment added' })
+            } catch (err: any) {
+                const status = err?.response?.status
+                const message =
+                    status === 403
+                        ? 'Forbidden – you are not authorized to comment on this task.'
+                        : 'Could not add comment'
+                toast.error({ message })
+            }
+        },
+
+        async deleteComment(taskId: number, commentId: number) {
+            const { $api } = useNuxtApp()
+            const toast = useToast()
+            const task = this.tasks.find((t) => t.id === taskId)
+            if (!task) return
+            try {
+                await $api.delete(`/api/comments/${commentId}`)
+                const index = this.tasks.findIndex((t) => t.id === taskId)
+                if (index !== -1) {
+                    this.tasks[index] = {
+                        ...this.tasks[index],
+                        comments:
+                            this.tasks[index].comments?.filter(
+                                (c) => c.id !== commentId
+                            ) ?? [],
+                    }
+                }
+                toast.success({ message: 'Comment deleted' })
+            } catch {
+                toast.error({ message: 'Could not delete comment' })
+            }
+        },
+
+        mergeTask(task: Task) {
+            const index = this.tasks.findIndex((t) => t.id === task.id)
+            if (index !== -1) this.tasks[index] = task
+            else this.tasks.push(task)
+        },
+
+        removeTask(taskId: number) {
+            this.tasks = this.tasks.filter((t) => t.id !== taskId)
+        },
+
         clear() {
             this.tasks = []
+            this.meta = null
         },
     },
 })

@@ -33,11 +33,11 @@ class TaskPolicy
      */
     public function create(User $user, int $projectId): bool
     {
-        return \App\Models\Project::findOrFail($projectId)
+        return Project::findOrFail($projectId)
             ->organization
             ->users()
             ->where('users.id', $user->id)
-            ->whereIn('role', ['owner', 'manager'])
+            ->wherePivotIn('role', ['owner', 'manager'])
             ->exists();
     }
 
@@ -50,7 +50,7 @@ class TaskPolicy
             ->organization
             ->users()
             ->where('users.id', $user->id)
-            ->whereIn('role', ['owner', 'manager'])
+            ->wherePivotIn('role', ['owner', 'manager'])
             ->exists();
     }
 
@@ -71,7 +71,7 @@ class TaskPolicy
             ->organization
             ->users()
             ->where('users.id', $user->id)
-            ->whereIn('role', ['owner', 'manager'])
+            ->wherePivotIn('role', ['owner', 'manager'])
             ->exists();
     }
 
