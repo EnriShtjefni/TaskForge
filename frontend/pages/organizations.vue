@@ -5,7 +5,7 @@ import {
   useOrganizationStore,
 } from '@/stores/organizations'
 import { type Project, useProjectStore } from '@/stores/projects'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import OrganizationModal from '@/components/organizations/OrganizationModal.vue'
 import OrganizationSection from '@/components/organizations/OrganizationSection.vue'
@@ -22,6 +22,12 @@ const editingOrg = ref<Organization | null>(null)
 const showProjectModal = ref(false)
 const editingProject = ref<Project | null>(null)
 const createProjectOrg = ref<Organization | null>(null)
+
+const selectedOrgId = ref<number | null>(null)
+const organizations = computed(() => orgStore.organizations)
+const selectedOrganization = computed<Organization | null>(() =>
+  organizations.value.find((o) => o.id === selectedOrgId.value) ?? null,
+)
 
 onMounted(async () => {
   if (!auth.isAuthenticated) {
@@ -82,9 +88,32 @@ const handleDeleteProject = (id: number) => {
         <h1 class="text-2xl sm:text-3xl font-bold dark:text-white">
           Organizations & Projects
         </h1>
+
+        <div
+            v-if="orgStore.organizations.length > 0"
+            class="flex-1 min-w-0 flex flex-wrap items-center gap-2 max-w-xs"
+        >
+          <select
+              id="org-select"
+              v-model="selectedOrgId"
+              class="w-full px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+          >
+            <option :value="null">
+              Select an organization
+            </option>
+            <option
+                v-for="org in organizations"
+                :key="org.id"
+                :value="org.id"
+            >
+              {{ org.name }} — {{ org.role }}
+            </option>
+          </select>
+        </div>
+
         <button
             type="button"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto sm:ml-auto"
             @click="editingOrg = null; showOrgModal = true"
         >
           + Create Organization
@@ -100,11 +129,16 @@ const handleDeleteProject = (id: number) => {
       >
         You are not part of any organization yet.
       </div>
-      <div v-else class="space-y-8">
+      <div v-else class="space-y-4">
+        <p
+            v-if="!selectedOrgId"
+            class="text-gray-500 dark:text-gray-400"
+        >
+          Select an organization to view its projects.
+        </p>
         <OrganizationSection
-            v-for="org in orgStore.organizations"
-            :key="org.id"
-            :organization="org"
+            v-else-if="selectedOrganization"
+            :organization="selectedOrganization"
             @edit-org="openEditOrg"
             @delete-org="handleDeleteOrg"
             @create-project="openCreateProject"

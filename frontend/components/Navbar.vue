@@ -39,12 +39,11 @@ const isActive = (to: string) => {
       class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center gap-4"
   >
     <div class="flex items-center min-w-0 gap-3">
-      <NuxtLink
-          to="/dashboard"
-          class="font-bold text-xl text-gray-800 dark:text-white hover:opacity-90 shrink-0"
+      <div
+          class="font-bold text-xl text-gray-800 dark:text-white shrink-0"
       >
         TaskForge
-      </NuxtLink>
+      </div>
 
       <!-- Mobile nav hamburger links -->
       <button
