@@ -60,9 +60,7 @@ const selectableUsersFor = (index: number) => {
 
   return users.value.filter(u => {
     if (u.id === ownerId.value) return false
-    if (usedIds.includes(u.id)) return false
-
-    return true
+    return !usedIds.includes(u.id);
   })
 }
 

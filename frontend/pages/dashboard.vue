@@ -36,15 +36,11 @@ const cards = computed(() => [
   {
     label: 'Organizations',
     value: totalOrganizations.value,
-    href: '/organizations',
-    color: 'bg-blue-600 hover:bg-blue-700',
     icon: '🏢',
   },
   {
     label: 'Projects',
     value: totalProjects.value,
-    href: '/organizations',
-    color: 'bg-green-600 hover:bg-green-700',
     icon: '📁',
   },
 ])
@@ -66,11 +62,10 @@ const cards = computed(() => [
     </div>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <NuxtLink
+      <div
           v-for="card in cards"
           :key="card.label"
-          :to="card.href"
-          class="block p-6 rounded-lg shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+          class="block p-6 rounded-lg shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
       >
         <div class="flex items-start justify-between">
           <div>
@@ -83,33 +78,7 @@ const cards = computed(() => [
           </div>
           <span class="text-3xl" aria-hidden="true">{{ card.icon }}</span>
         </div>
-        <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-          View details →
-        </p>
-      </NuxtLink>
-    </div>
-
-    <section class="pt-4">
-      <div class="flex flex-wrap gap-4">
-        <NuxtLink
-            to="/organizations"
-            class="inline-flex items-center px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Organizations & Projects
-        </NuxtLink>
-        <NuxtLink
-            to="/tasks"
-            class="inline-flex items-center px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
-        >
-          Task Board (Kanban)
-        </NuxtLink>
-        <NuxtLink
-            to="/activity-logs"
-            class="inline-flex items-center px-4 py-2 rounded bg-amber-600 text-white hover:bg-amber-700"
-        >
-          Activity Logs
-        </NuxtLink>
       </div>
-    </section>
+    </div>
   </div>
 </template>

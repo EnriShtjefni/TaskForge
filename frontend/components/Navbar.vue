@@ -5,6 +5,7 @@ import { onClickOutside } from '@vueuse/core'
 import sunIcon from '~/assets/icons/sun.svg'
 import moonIcon from '~/assets/icons/moon.svg'
 import arrowDownIcon from '~/assets/icons/arrowDown.svg'
+import hamburgerIcon from '~/assets/icons/hamburger.svg'
 
 const authUser = useAuthStore()
 const { isDark, toggle, init } = useDarkMode()
@@ -13,10 +14,16 @@ const route = useRoute()
 onMounted(init)
 
 const openLogoutDropdown = ref(false)
+const openMobileNav = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
+const mobileNavRef = ref<HTMLElement | null>(null)
 
 onClickOutside(dropdownRef, () => {
   openLogoutDropdown.value = false
+})
+
+onClickOutside(mobileNavRef, () => {
+  openMobileNav.value = false
 })
 
 const isActive = (to: string) => {
@@ -31,15 +38,31 @@ const isActive = (to: string) => {
   <nav
       class="bg-white dark:bg-gray-800 shadow px-4 py-3 flex justify-between items-center gap-4"
   >
-    <div class="flex items-center min-w-0">
+    <div class="flex items-center min-w-0 gap-3">
       <NuxtLink
           to="/dashboard"
           class="font-bold text-xl text-gray-800 dark:text-white hover:opacity-90 shrink-0"
       >
         TaskForge
       </NuxtLink>
+
+      <!-- Mobile nav hamburger links -->
+      <button
+          v-if="authUser.isAuthenticated"
+          class="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200"
+          type="button"
+          aria-label="Open navigation"
+          @click="openMobileNav = !openMobileNav"
+      >
+        <img
+            :src="hamburgerIcon"
+            class="w-5 h-5 dark:invert"
+            alt="Menu"
+        />
+      </button>
     </div>
 
+    <!-- Desktop nav links -->
     <div
         v-if="authUser.isAuthenticated"
         class="hidden sm:flex items-center justify-center gap-1 flex-1"
@@ -132,4 +155,52 @@ const isActive = (to: string) => {
       </div>
     </div>
   </nav>
+
+  <!-- Mobile nav dropdown -->
+  <div
+      v-if="authUser.isAuthenticated && openMobileNav"
+      ref="mobileNavRef"
+      class="sm:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3 space-y-2"
+  >
+    <NuxtLink
+        to="/dashboard"
+        class="block px-3 py-2 rounded text-sm font-medium"
+        :class="isActive('/dashboard')
+                ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+        @click="openMobileNav = false"
+    >
+      Dashboard
+    </NuxtLink>
+    <NuxtLink
+        to="/organizations"
+        class="block px-3 py-2 rounded text-sm font-medium"
+        :class="isActive('/organizations')
+                ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+        @click="openMobileNav = false"
+    >
+      Organizations
+    </NuxtLink>
+    <NuxtLink
+        to="/tasks"
+        class="block px-3 py-2 rounded text-sm font-medium"
+        :class="isActive('/tasks')
+                ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+        @click="openMobileNav = false"
+    >
+      Tasks
+    </NuxtLink>
+    <NuxtLink
+        to="/activity-logs"
+        class="block px-3 py-2 rounded text-sm font-medium"
+        :class="isActive('/activity-logs')
+                ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+        @click="openMobileNav = false"
+    >
+      Activity Logs
+    </NuxtLink>
+  </div>
 </template>
