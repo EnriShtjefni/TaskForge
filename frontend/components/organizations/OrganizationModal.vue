@@ -95,15 +95,17 @@ const submit = async () => {
           <span class="font-medium dark:text-white">Members</span>
           <button
               @click="addMember"
-              class="text-green-600 font-bold text-lg px-2 rounded hover:bg-green-100 dark:hover:bg-green-700"
-              title="Add member"
+              class="flex items-center gap-1 px-3 py-1.5
+                     bg-green-600 text-white text-sm font-medium
+                     rounded hover:bg-green-700
+                     focus:outline-none focus:ring-2 focus:ring-green-400"
           >
-            +
+            Add member
           </button>
         </div>
 
         <div v-if="form.members.length === 0" class="text-gray-500 dark:text-gray-300">
-          No members yet. Click + to add a user.
+          No members yet.
         </div>
 
         <div

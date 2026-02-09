@@ -2,6 +2,44 @@
 
 A mini-SaaS platform for project and task management: **organizations** have **projects**, projects have **tasks** and **comments**. Users have roles (owner, manager, member). Built with a Laravel API (Sanctum, Reverb) and a Nuxt 3 frontend (Pinia, Kanban board, real-time updates).
 
+## Table of contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Quick start](#quick-start)
+- [Running the application](#running-the-application)
+- [Automatic testing](#automatic-testing)
+- [Project structure](#project-structure)
+
+---
+
+## Overview
+
+- **Goal**: Build a mini-SaaS platform for project and task management.
+- **Domain**:
+  - An **Organization** can have many **Projects**.
+  - A **Project** can have many **Tasks** and **Comments** (via tasks).
+  - **Users** belong to organizations via a many-to-many relation with a **role** on the pivot: `owner`, `manager`, `member`.
+- **Authorization model** (enforced via Laravel Policies and Form Requests):
+  - **Creates organization**: any authenticated **User**.
+  - **Deletes project**: organization **Owner**.
+  - **Creates task**: organization **Owner / Manager** of the project’s organization.
+  - **Changes task status**: **assigned user** of that task.
+  - **Comments on task**: any **project member** (user attached to the project).
+- **Task status workflow**:
+  - Allowed statuses: `todo`, `in_progress`, `review`, `done`.
+  - Only valid transitions are accepted (both frontend and backend validate):  
+    - `todo` → `in_progress`  
+    - `in_progress` → `review`  
+    - `review` → `done` or back to `in_progress`  
+    - `done` → (no further transitions)
+- **Main screens & navigation**:
+  - **Auth**: `/login`, `/register` — Laravel Sanctum cookie-based auth for the Nuxt SPA.
+  - **Dashboard**: `/dashboard` — summary cards and quick links to Organizations, Tasks (Kanban), and Activity Logs.
+  - **Organizations & Projects**: `/organizations` — list organizations you belong to, manage projects inside each organization, manage project members (respecting roles).
+  - **Task Board (Kanban)**: `/tasks` — select a project, see tasks grouped by status, drag & drop (valid transitions only), filters/search/pagination, assign users (only members), comments per task, real-time updates via Reverb.
+  - **Activity Logs**: `/activity-logs` — read-only table of recent actions (auth + CRUD on organizations/projects/tasks/comments).
+
 ---
 
 ## Prerequisites
@@ -43,7 +81,7 @@ cd backend
      - **SQLite**: `DB_CONNECTION=sqlite`, and ensure `database/database.sqlite` exists (created by default or `touch database/database.sqlite`).
      - **MySQL**: `DB_CONNECTION=mysql`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
    - **`APP_URL`** — URL of the API (e.g. `http://localhost:8000` or `http://localhost:8001`). The frontend will call this; keep it consistent with how you run `php artisan serve`.
-   - **Sanctum (SPA auth)** — `SANCTUM_STATEFUL_DOMAINS` must include the frontend origin, e.g. `localhost:3000` (no `http://` needed for subdomain).
+   - **Sanctum (SPA auth)** — `SANCTUM_STATEFUL_DOMAINS` must include the frontend origin, e.g. `localhost:3000`.
    - **Reverb (real-time)** — if you use broadcasting:
      - `BROADCAST_CONNECTION=reverb`
      - `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET` — from `php artisan reverb:install` or your Reverb config.
@@ -118,13 +156,6 @@ cd backend
 php artisan serve
 ```
 
-Or on a specific port, e.g. 8001:
-
-```bash
-php artisan serve --port=8001
-```
-
-Ensure `APP_URL` and the frontend `BACKEND_URL` use this same URL (e.g. `http://localhost:8001`).
 
 ### Terminal 2 — Nuxt frontend
 

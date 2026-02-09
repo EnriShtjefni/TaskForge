@@ -105,7 +105,7 @@ class TaskController extends Controller
         $this->authorize('updateStatus', $task);
 
         $task = $this->taskService->updateStatus($task, $request->status);
-        $task->load(['assignee']);
+        $task->load(['assignee', 'comments.user']);
 
         activity()
             ->causedBy($request->user())
