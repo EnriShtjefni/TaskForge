@@ -19,6 +19,7 @@ export const useOrganizationStore = defineStore('organizations', {
     state: () => ({
         organizations: [] as Organization[],
         loading: false,
+        selectedOrganizationId: null as number | null,
     }),
 
     getters: {
@@ -80,6 +81,10 @@ export const useOrganizationStore = defineStore('organizations', {
             } catch {
                 toast.error({ message: 'Could not delete organization' })
             }
+        },
+
+        setSelectedOrg(id: number | null) {
+            this.selectedOrganizationId = id
         },
     },
 })

@@ -23,7 +23,11 @@ const showProjectModal = ref(false)
 const editingProject = ref<Project | null>(null)
 const createProjectOrg = ref<Organization | null>(null)
 
-const selectedOrgId = ref<number | null>(null)
+const selectedOrgId = computed({
+  get: () => orgStore.selectedOrganizationId,
+  set: (val) => orgStore.setSelectedOrg(val),
+})
+
 const organizations = computed(() => orgStore.organizations)
 const selectedOrganization = computed<Organization | null>(() =>
   organizations.value.find((o) => o.id === selectedOrgId.value) ?? null,
@@ -121,7 +125,7 @@ const handleDeleteProject = (id: number) => {
       </div>
 
       <div v-if="orgStore.loading" class="text-gray-500">
-        Loading organizations...
+        Loading organization...
       </div>
       <div
           v-else-if="orgStore.organizations.length === 0"

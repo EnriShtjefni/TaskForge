@@ -18,7 +18,10 @@ const orgStore = useOrganizationStore()
 const tasksStore = useTasksStore()
 const authStore = useAuthStore()
 
-const selectedProjectId = ref<number | null>(null)
+const selectedProjectId = computed({
+  get: () => tasksStore.selectedProjectId,
+  set: (val) => tasksStore.setSelectedProject(val),
+})
 const draggedTask = ref<Task | null>(null)
 const dragOverColumn = ref<TaskStatus | null>(null)
 

@@ -50,6 +50,7 @@ export type PaginationMeta = {
 export const useTasksStore = defineStore('tasks', {
     state: () => ({
         tasks: [] as Task[],
+        selectedProjectId: null as number | null,
         meta: null as PaginationMeta | null,
         loading: false,
     }),
@@ -159,6 +160,10 @@ export const useTasksStore = defineStore('tasks', {
             } catch {
                 toast.error({ message: 'Could not delete task' })
             }
+        },
+
+        setSelectedProject(projectId: number | null) {
+            this.selectedProjectId = projectId
         },
 
         async addComment(taskId: number, body: string) {
