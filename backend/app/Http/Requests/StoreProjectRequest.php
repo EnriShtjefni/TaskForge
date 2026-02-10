@@ -12,13 +12,6 @@ class StoreProjectRequest extends FormRequest
      */
     public function authorize(): bool
     {
-//        $organization = Organization::findOrFail($this->organization_id);
-//
-//        return $organization->users()
-//            ->where('user_id', auth()->id())
-//            ->where('role', 'owner')
-//            ->exists();
-
         return Organization::where('id', $this->organization_id)
             ->whereHas('users', fn ($q) =>
             $q->where('user_id', auth()->id())
